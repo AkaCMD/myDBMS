@@ -1,9 +1,10 @@
 # myDBMS
 ## 声明 :  
-fork自学长的代码，改成在windows上使用bison来运行
+fork自学长的代码，改成在windows上编译运行
 ## for run :  
   RE:  
   windows
+
   command:  
   flex sql.l  
   bison -d sql.y  
