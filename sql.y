@@ -1,170 +1,174 @@
 %{
 #include "sql.h"
-
+// parser
 char database[64]={0};
+char* prompt = "sql>>";
 
 int yylex();
 int yyparse();
 
-void yyerror (const char *str) 
+void yyerror (char const *msg) 
 {
-	fprintf(stderr, "error: %s\n", str);		// error function
+	fprintf(stderr, "error: %s\n", msg);
 }
 
 int yywrap() 
 {
 	return 1;
 }
-// main function 
+
 int main() 
 {
-	printf("SQL>");
-	return	yyparse(); // calling parse funtion 
+	while(1){
+		printf("%s", prompt);
+		yyparse();
+	}
+	return 0;
 } 
 
 %}
 
 %union{  
-	int intval;   
-  	char *strval;
-  	struct hyper_items_def *Citemsval;
-  	struct value_def *valueval;
-  	struct item_def *itemval;
-  	struct conditions_def *conval;
-  	struct table_def *tbval;
-  	struct upcon_def *updateval;
+	int int_var;   
+  	char *str_var;
+  	struct hyper_items_def *items_var;
+  	struct value_def *value_var;
+  	struct item_def *item_var;
+  	struct conditions_def *condition_var;
+  	struct table_def *table_var;
+  	struct upcon_def *update_var;
 }
 
 %token SELECT FROM WHERE AND OR DROP DELETE TABLE CREATE INTO VALUES INSERT UPDATE SET SHOW DATABASE DATABASES TABLES EXIT USE
-%token <intval> NUMBER 
-%token <strval> STRING ID INT CHAR
-%type <intval> comparator
-%type <Citemsval> hyper_items create_items
-%type <valueval> value_list value
-%type <itemval> item item_list
-%type <conval> condition conditions
-%type <tbval> tables
-%type <updateval> up_cond up_conds
+%token <int_var> NUMBER 
+%token <str_var> STRING ID INT CHAR
+%type <int_var> comparator
+%type <items_var> hyper_items create_items
+%type <value_var> value_list value
+%type <item_var> item item_list
+%type <condition_var> condition conditions
+%type <table_var> tables
+%type <update_var> up_cond up_conds
 %left OR
 %left AND
 
-
 %%
 
-/* production for sql grammar */
+/* sql grammar */
 
-statements: statements statement | statement
+line_list: line | line_list line
+line: statement '\n'
 statement: createsql | showsql | selectsql | insertsql | deletesql | updatesql | dropsql | exitsql | usesql
 
-usesql: 		USE ID ';' '\n' {
+usesql: 		USE ID ';' {
 					printf("\n");
-					useDB($2);
-					printf("\nSQL>");
+					use_database($2);
+					printf("\n%s", prompt);
 		        }
 
-showsql: 		SHOW DATABASES ';' '\n' {
+showsql: 		SHOW DATABASES ';' {
 					printf("\n");
-		            showDB();
-		            printf("\nSQL>");
+		            show_database();
+					printf("\n%s", prompt);
 		        }
-		        |SHOW TABLES ';' '\n' {
+		        |SHOW TABLES ';' {
 		        	printf("\n");
-		            showTable();
-		            printf("\nSQL>");
+		            show_table();
+					printf("\n%s", prompt);
 		        }
 
-createsql:		CREATE TABLE ID '(' hyper_items ')' ';' '\n' {
+createsql:		CREATE TABLE ID '(' hyper_items ')' ';' {
 					printf("\n");
-                	createTable($3, $5);
-                	printf("\nSQL>");
+                	create_table($3, $5);
+					printf("\n%s", prompt);
 				}
 
-				|CREATE DATABASE ID ';' '\n' {
+				|CREATE DATABASE ID ';' {
 					strcpy(database, $3);
 					printf("\n");
-					createDB();
-					printf("\nSQL>");
+					create_database();
+					printf("\n%s", prompt);
 				}		        
 
-selectsql: 		SELECT '*' FROM tables ';' '\n'{
+selectsql: 		SELECT '*' FROM tables ';' {
 					printf("\n");
-					selectWhere(NULL, $4, NULL);
+					select_where(NULL, $4, NULL);
 					printf("\n");
-					printf("SQL>");
+					printf("\n%s", prompt);
 				}
-				| SELECT item_list FROM tables ';' '\n' {
+				| SELECT item_list FROM tables ';' {
 					printf("\n");
-					selectWhere($2, $4, NULL);
-					printf("\nSQL>");
+					select_where($2, $4, NULL);
+					printf("\n%s", prompt);
 				}		
-				|SELECT '*' FROM tables WHERE conditions ';' '\n' {
+				|SELECT '*' FROM tables WHERE conditions ';' {
 					printf("\n");
-					selectWhere(NULL, $4, $6);
-					printf("\nSQL>");
+					select_where(NULL, $4, $6);
+					printf("\n%s", prompt);
 				}
-				|SELECT item_list FROM tables WHERE conditions ';' '\n' { 
+				|SELECT item_list FROM tables WHERE conditions ';' { 
 					printf("\n");
-					selectWhere($2, $4, $6);
-					printf("\nSQL>");
+					select_where($2, $4, $6);
+					printf("\n%s", prompt);
 				}
 
-deletesql:		DELETE FROM ID ';' '\n' {
+deletesql:		DELETE FROM ID ';' {
 					printf("\n");
 					deletes($3, NULL);
 					printf("\n");
-					printf("SQL>");
+					printf("\n%s", prompt);
 				}
 
-				|DELETE FROM ID WHERE conditions ';' '\n' 	{ 
+				|DELETE FROM ID WHERE conditions ';' { 
 					printf("\n");
 					deletes($3, $5);
-					printf("\nSQL>");
+					printf("\n%s", prompt);
 				}
 
 
-insertsql:		INSERT INTO ID VALUES '(' value_list ')' ';' '\n' {
+insertsql:		INSERT INTO ID VALUES '(' value_list ')' ';' {
 					printf("\n");
-					multiInsert($3, NULL, $6);
-					printf("\nSQL>");
+					multi_insert($3, NULL, $6);
+					printf("\n%s", prompt);
 				}
 		
-				|INSERT INTO ID '(' item_list ')' VALUES '(' value_list ')' ';' '\n' {
+				|INSERT INTO ID '(' item_list ')' VALUES '(' value_list ')' ';' {
 					printf("\n");
-					multiInsert($3, $5, $9);
-					printf("\nSQL>");
+					multi_insert($3, $5, $9);
+					printf("\n%s", prompt);
 				}
 
 
-updatesql:		UPDATE ID SET up_conds ';' '\n' {
+updatesql:		UPDATE ID SET up_conds ';' {
 					printf("\n");
 					updates($2, $4, NULL);
-					printf("\nSQL>");
+					printf("\n%s", prompt);
 				}
 		
-				|UPDATE ID SET up_conds WHERE conditions ';' '\n' {
+				|UPDATE ID SET up_conds WHERE conditions ';' {
 					printf("\n");
 					updates($2, $4, $6);
-					printf("\nSQL>");
+					printf("\n%s", prompt);
 				}
 
-dropsql:		DROP TABLE ID ';' '\n'	{
+dropsql:		DROP TABLE ID ';' {
 					printf("\n");
-					dropTable($3);
-					printf("\nSQL>");
+					drop_table($3);
+					printf("\n%s", prompt);
 				}
-				| DROP DATABASE ID ';' '\n' {
+				| DROP DATABASE ID ';' {
 					printf("\n");
-					dropDB($3);
-					printf("\nSQL>");
+					drop_database($3);
+					printf("\n%s", prompt);
 				}
 
 exitsql: 		EXIT ';' {
 					printf("\n");
-		            printf("exit with code 0!\n");
+		            printf("exit without error!\n");
 		            exit(0);
 		        }
 
-create_items:	ID INT {
+create_items:	ID INT { // $$符号可引用产生式左部非终结符的属性值，而$i则可以引用产生式右部第i个文法符号的属性值
 					$$ = (struct hyper_items_def *)malloc(sizeof(struct hyper_items_def));
                     $$->field = $1;
                     $$->type = 0;	

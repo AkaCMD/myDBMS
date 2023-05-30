@@ -1,56 +1,36 @@
+/* lexer */
+%option caseless
 %{
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include "sql.tab.h"
-
+#include "sql.tab.h"// generate from .y
+void yyerror (char const *msg);
 %}
 
 %%
-select |
-SELECT				{ return SELECT; }
-drop |
-DROP					{ return DROP; }
-table |
-TABLE					{ return TABLE; }
-tables |
-TABLES					{ return TABLES; }
-database |
-DATABASE				{ return DATABASE; }
-databases |
-DATABASES				{ return DATABASES; }
-create |
-CREATE				{ return CREATE; }
-insert |
-INSERT				{ return INSERT; } 
-update |
-UPDATE				{ return UPDATE; } 
-set |
-SET 					{ return SET; } 
-delete |
-DELETE 				{ return DELETE; } 
-from |
-FROM					{ return FROM; } 
-where |
-WHERE					{ return WHERE; } 
-into |
-INTO 					{ return INTO; } 
-values |
-VALUES					{ return VALUES; } 
-and |
-AND						{ return AND; } 
-or |
-OR						{ return OR; } 
-int |
-INT   					{ return INT; } 
-char |
-CHAR 					{ return CHAR; }  
-show |
-SHOW					{ return SHOW; } 
-exit |
-EXIT					{ return EXIT; } 
-use |
-USE						{ return USE; } 
+SELECT				    return SELECT;
+DROP					return DROP;
+TABLE					return TABLE;
+TABLES					return TABLES;
+DATABASE				return DATABASE;
+DATABASES				return DATABASES;
+CREATE				    return CREATE;
+INSERT				    return INSERT;
+UPDATE				    return UPDATE;
+SET 					return SET;
+DELETE 				    return DELETE;
+FROM					return FROM;
+WHERE					return WHERE;
+INTO 					return INTO; 
+VALUES					return VALUES;
+AND						return AND;
+OR						return OR;
+INT   					return INT;
+CHAR 					return CHAR;  
+SHOW					return SHOW;
+EXIT					return EXIT;
+USE						return USE;
 [;]		|				
 [(]		|				
 [)]		|				
@@ -61,10 +41,10 @@ USE						{ return USE; }
 [!]		|
 "<"		|
 ">"		|
-[=]						return *yytext;
-[\'][A-Za-z][A-Za-z0-9_]*[\'] 		{ yylval.strval=strdup(yytext); return STRING; }
-[A-Za-z][A-Za-z0-9_]*	{ yylval.strval=strdup(yytext); return ID; }
-[0-9]+ 		{ yylval.intval=atoi(yytext); return NUMBER;	}			
+[=]						return *yytext; // operators
+[\'][A-Za-z][A-Za-z0-9_]*[\'] 		{ yylval.str_var=strdup(yytext); return STRING; } // string value
+[A-Za-z][A-Za-z0-9_]*	            { yylval.str_var=strdup(yytext); return ID; } // identifier
+[0-9]+ 		                        { yylval.int_var=atoi(yytext); return NUMBER;	} // number			
 \n						return *yytext;
 [ \t]+					/* ignore whitespace */
 %%

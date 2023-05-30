@@ -9,7 +9,7 @@ struct mydb *dbroot = NULL;
 
 
 /*item链表就地逆置*/
-struct item_def *converseItems(struct item_def *ppHead){
+struct item_def *converse_items(struct item_def *ppHead){
     struct item_def *pCurNode = ppHead;
     struct item_def *pPrevNode = NULL;
     struct item_def *pTmpNode = NULL;
@@ -24,7 +24,7 @@ struct item_def *converseItems(struct item_def *ppHead){
 }
 
 /*各种结构链表的内存释放*/
-void freeHItems(struct hyper_items_def *Hitemroot){
+void free_hyper_items(struct hyper_items_def *Hitemroot){
 	struct hyper_items_def *Hitemtemp;
 	while(Hitemroot != NULL){
 		Hitemtemp = Hitemroot->next;
@@ -33,18 +33,18 @@ void freeHItems(struct hyper_items_def *Hitemroot){
 	}
 }
 
-void freeCons(struct conditions_def *conroot){
+void free_conditions(struct conditions_def *conroot){
 	if(conroot == NULL)
 		return;
     if (conroot->left != NULL)
-        freeCons(conroot->left);
+        free_conditions(conroot->left);
     else if (conroot->right != NULL)
-        freeCons(conroot->right);
+        free_conditions(conroot->right);
     else
         free(conroot);
 }
 
-void freeItems(struct item_def *itemroot){
+void free_items(struct item_def *itemroot){
 	struct item_def *itemtemp;
 	while(itemroot != NULL){
 		itemtemp = itemroot->next;
@@ -53,7 +53,7 @@ void freeItems(struct item_def *itemroot){
 	}
 }
 
-void freeTables(struct table_def *tableroot){
+void free_tables(struct table_def *tableroot){
 	struct table_def *tableptr;
 	while(tableroot != NULL){
 		tableptr = tableroot->next;
@@ -62,7 +62,7 @@ void freeTables(struct table_def *tableroot){
 	}
 }
 
-void freeUpcon(struct upcon_def *uproot){
+void free_upcons(struct upcon_def *uproot){
 	struct upcon_def *uptemp;
 	while(uproot != NULL){
 		uptemp = uproot->next;
@@ -71,7 +71,7 @@ void freeUpcon(struct upcon_def *uproot){
 	}
 }
 
-void freeVal(struct value_def *valroot){
+void free_value(struct value_def *valroot){
 	struct value_def *valtemp;
 	while(valroot != NULL){
 		valtemp = valroot->next;
@@ -82,7 +82,7 @@ void freeVal(struct value_def *valroot){
 
 /*创建数据库。若数据库根节点为空，则在根结点处创建数据库，若不为空则遍历数据库链表，
 若找到同名数据库，提示已存在，返回，若没找到，在链表尾部插入新的数据库*/
-void createDB(){
+void create_database(){
 	if(dbroot == NULL){
 		dbroot = (struct mydb *)malloc(sizeof(struct mydb));
 	    strcpy(dbroot->name,database);
@@ -114,7 +114,7 @@ void createDB(){
 }
 
 /*展示所有数据库。若根节点为空，提示数据库列表为空请先创建一个数据库，否则遍历数据库链表，打印数据库名*/
-void showDB(){
+void show_database(){
 	struct mydb *dbtemp = NULL;
 	if(dbroot != NULL)
 		dbtemp = dbroot;
@@ -131,7 +131,7 @@ void showDB(){
 
 /*指定使用的数据库，若数据库根节点为空，提示请先创建一个数据库，遍历数据库链表，找到对应数据库，
 将全局变量database更新为当前数据库名，否则提示数据库不存在，返回*/
-void useDB(char *dbname){
+void use_database(char *dbname){
 	struct mydb *dbtemp = NULL;
 	if(dbroot != NULL)
 		dbtemp = dbroot;
@@ -153,7 +153,7 @@ void useDB(char *dbname){
 /*创建表。若数据库根节点为空，提示先创建数据库，否则遍历数据库列表，查找当前使用的数据库，若未找到，提示数据库不存在，
 若找到，再看当前数据库下的表根节点是否为空，若为空，在根节点处创建新表，否则遍历表链表，若找到名字相同的表，提示
 该表已存在，返回，否则在链表尾部建立新表*/
-void createTable(char *tableval, struct hyper_items_def *Hitemroot){
+void create_table(char *tableval, struct hyper_items_def *Hitemroot){
 	int i;
 	struct mydb *dbtemp = NULL;
 	struct table *newtable = NULL;
@@ -163,7 +163,7 @@ void createTable(char *tableval, struct hyper_items_def *Hitemroot){
 		dbtemp = dbroot;
 	else{
 		printf("error: Please create a database first!\n");
-		freeHItems(Hitemroot);
+		free_hyper_items(Hitemroot);
 		return;
 	}
 	while(dbtemp != NULL){
@@ -187,21 +187,21 @@ void createTable(char *tableval, struct hyper_items_def *Hitemroot){
 				dbtemp->tbroot->next = NULL;
 				if(dbtemp->tbroot != NULL)
 					printf("Table %s created successfully!\n", tableval);
-				freeHItems(Hitemroot);
+				free_hyper_items(Hitemroot);
 				return;
 			}
 			newtable = dbtemp->tbroot;
 			while(newtable->next != NULL){
 				if(strcmp(newtable->name,tableval) == 0){
 					printf("error: The table already exists!\n");
-					freeHItems(Hitemroot);
+					free_hyper_items(Hitemroot);
 					return;
 				}
 				newtable = newtable->next;
 			}
 			if(strcmp(newtable->name,tableval) == 0){
 				printf("error: The table already exists!\n");
-				freeHItems(Hitemroot);
+				free_hyper_items(Hitemroot);
 				return;
 			}
 			newtable->next = (struct table *)malloc(sizeof(struct table));
@@ -220,17 +220,17 @@ void createTable(char *tableval, struct hyper_items_def *Hitemroot){
 			newtable->next->flen = i;
 			newtable->next->next = NULL;
 			printf("Table %s created successfully!\n", tableval);
-			freeHItems(Hitemroot);
+			free_hyper_items(Hitemroot);
 			return;
 		}
 		dbtemp = dbtemp->next;
 	}
-	freeHItems(Hitemroot);
+	free_hyper_items(Hitemroot);
 	printf("error: Database %s doesn't exist!\n", database);
 }
 
 /*展示表。遍历当前选用的数据库下的表链表，打印表名*/
-void showTable(){
+void show_table(){
 	struct mydb *dbtemp = NULL;
 	struct table *tabletemp = NULL;
 	int i,j,temp;
@@ -258,7 +258,7 @@ void showTable(){
 /*插入记录。找到插入的表，若未找到，提示不存在，找到以后，若未指定字段及其顺序，将value list中的值依次插入到每个字段的最后，
 若指定了字段和顺序，则按顺序查找字段，并依次追加记录，若未查找到对应字段，则提示字段与表不匹配，返回。完成插值以后，
 判断itemlist和valuelist是否同时为空，若不是，则提示两者不匹配，返回，若是，则提示成功，并将该表的条数值加一*/
-void multiInsert(char *tableval, struct item_def *itemroot, struct value_def *valroot){
+void multi_insert(char *tableval, struct item_def *itemroot, struct value_def *valroot){
 	struct mydb *dbtemp = NULL;
 	struct table *tabletemp = NULL;
 	struct item_def *itemtemp = NULL;
@@ -268,8 +268,8 @@ void multiInsert(char *tableval, struct item_def *itemroot, struct value_def *va
 		dbtemp = dbroot;
 	else{
 		printf("error: Please create a database first!\n");
-		freeItems(itemroot);
-		freeVal(valroot);
+		free_items(itemroot);
+		free_value(valroot);
 		return;
 	}
 	while(dbtemp != NULL){
@@ -313,8 +313,8 @@ void multiInsert(char *tableval, struct item_def *itemroot, struct value_def *va
 							}
 							if(j == tabletemp->flen){
 								printf("error: Column name does not match the table definition!\n");
-								freeItems(itemroot);
-								freeVal(valroot);
+								free_items(itemroot);
+								free_value(valroot);
 								return;
 							}
 							itemtemp = itemtemp->next;
@@ -329,21 +329,21 @@ void multiInsert(char *tableval, struct item_def *itemroot, struct value_def *va
 					else{
 						printf("error: The number of supplied values does not match the table definition!\n");
 					}
-					freeItems(itemroot);
-					freeVal(valroot);
+					free_items(itemroot);
+					free_value(valroot);
 					return;
 				}
 				tabletemp = tabletemp->next;
 			}
 			printf("error: The table doesn't exist!\n");
-			freeItems(itemroot);
-			freeVal(valroot);
+			free_items(itemroot);
+			free_value(valroot);
 			return;
 		}
 		dbtemp = dbtemp->next;
 	}
-	freeItems(itemroot);
-	freeVal(valroot);
+	free_items(itemroot);
+	free_value(valroot);
 	printf("error: Database %s doesn't exist!\n", database);
 }
 
@@ -428,20 +428,20 @@ conroot是条件二叉树根节点，若无条件则传入NULL，首先找到查
 提示成功，返回。若不为单表，即为2个表联合查询，那么先遍历两个表，找到第一组名称相同且数据类型相同的字段，作为主码，
 将字段值相同的记录进行合并，构成新表，存入tabletemp中，若没有字段相同的，将笛卡尔乘积存入tabletemp中，然后判断itemroot
 是否为空，若为空，判断并打印所有字段记录，若不为空，判断并打印对应的字段记录*/
-void selectWhere(struct item_def *itemroot, struct table_def *tableroot, struct conditions_def *conroot){
+void select_where(struct item_def *itemroot, struct table_def *tableroot, struct conditions_def *conroot){
 	struct mydb *dbtemp = NULL;
 	struct table_def *tableptr = NULL;
 	struct table *tabletemp = NULL;
 	struct item_def *itemtemp = NULL;
 	int i, j, k, m, n, len1, len2, pk1 = -1, pk2 = -1;
-	itemroot = converseItems(itemroot);
+	itemroot = converse_items(itemroot);
 	if(dbroot != NULL)
 		dbtemp = dbroot;
 	else{
 		printf("error: Please create a database first!\n");
-		freeCons(conroot);
-		freeItems(itemroot);
-		freeTables(tableroot);
+		free_conditions(conroot);
+		free_items(itemroot);
+		free_tables(tableroot);
 		return;
 	}
 	while(dbtemp != NULL){
@@ -458,9 +458,9 @@ void selectWhere(struct item_def *itemroot, struct table_def *tableroot, struct 
 				}
 				if(tabletemp == NULL){
 					printf("error: 	Table %s doesn't exist!\n", tableptr->table);
-					freeCons(conroot);
-					freeItems(itemroot);
-					freeTables(tableroot);
+					free_conditions(conroot);
+					free_items(itemroot);
+					free_tables(tableroot);
 					return;
 				}
 				tableptr = tableptr->next;
@@ -483,8 +483,8 @@ void selectWhere(struct item_def *itemroot, struct table_def *tableroot, struct 
 							printf("\n");
 						}
 					}
-					freeCons(conroot);
-					freeTables(tableroot);
+					free_conditions(conroot);
+					free_tables(tableroot);
 					return;
 				}
 			}
@@ -597,9 +597,9 @@ void selectWhere(struct item_def *itemroot, struct table_def *tableroot, struct 
 				}
 				if(i == tabletemp->flen){
 					printf("error: Column name does not match the table definition!\n");
-					freeCons(conroot);
-					freeItems(itemroot);
-					freeTables(tableroot);
+					free_conditions(conroot);
+					free_items(itemroot);
+					free_tables(tableroot);
 					return;
 				}
 				itemtemp = itemtemp->next;
@@ -642,16 +642,16 @@ void selectWhere(struct item_def *itemroot, struct table_def *tableroot, struct 
 					}
 				}
 			}
-			freeCons(conroot);
-			freeItems(itemroot);
-			freeTables(tableroot);
+			free_conditions(conroot);
+			free_items(itemroot);
+			free_tables(tableroot);
 			return;
 		}
 		dbtemp = dbtemp->next;
 	}
-	freeCons(conroot);
-	freeItems(itemroot);
-	freeTables(tableroot);
+	free_conditions(conroot);
+	free_items(itemroot);
+	free_tables(tableroot);
 	printf("error: Database %s doesn't exist!\n", database);
 }
 
@@ -665,7 +665,7 @@ void deletes(char *tableval, struct conditions_def *conroot){
 		dbtemp = dbroot;
 	else{
 		printf("error: Please create a database first!\n");
-		freeCons(conroot);
+		free_conditions(conroot);
 		return;
 	}
 	while(dbtemp != NULL){
@@ -688,18 +688,18 @@ void deletes(char *tableval, struct conditions_def *conroot){
 						}
 					}
 					printf("Delete successfully!\n");
-					freeCons(conroot);
+					free_conditions(conroot);
 					return;
 				}
 				tabletemp = tabletemp->next;
 			}
 			printf("error: The table doesn't exist!\n");
-			freeCons(conroot);
+			free_conditions(conroot);
 			return;
 		}
 		dbtemp = dbtemp->next;
 	}
-	freeCons(conroot);
+	free_conditions(conroot);
 	printf("error: Database %s doesn not exist!\n", database);	
 }
 
@@ -715,8 +715,8 @@ void updates(char *tableval, struct upcon_def *uproot, struct conditions_def *co
 		dbtemp = dbroot;
 	else{
 		printf("error: Please create a database first!\n");
-		freeCons(conroot);
-		freeUpcon(uproot);
+		free_conditions(conroot);
+		free_upcons(uproot);
 		return;
 	}
 	while(dbtemp != NULL){
@@ -734,8 +734,8 @@ void updates(char *tableval, struct upcon_def *uproot, struct conditions_def *co
 						}
 						if(i == tabletemp->flen){
 							printf("error: Field %s does not exist!\n", uptemp->field);
-							freeCons(conroot);
-							freeUpcon(uproot);
+							free_conditions(conroot);
+							free_upcons(uproot);
 							return;
 						}
 						uptemp = uptemp->next;
@@ -750,8 +750,8 @@ void updates(char *tableval, struct upcon_def *uproot, struct conditions_def *co
 									strcpy(uptemp->pos->key[i].skey, uptemp->value.skey);
 								else{
 									printf("error: Data type mismatch!\n");
-									freeCons(conroot);
-									freeUpcon(uproot);
+									free_conditions(conroot);
+									free_upcons(uproot);
 									return;
 								}
 								uptemp = uptemp->next;
@@ -759,25 +759,25 @@ void updates(char *tableval, struct upcon_def *uproot, struct conditions_def *co
 						}
 					}
 					printf("Update successfully!\n");
-					freeCons(conroot);
-					freeUpcon(uproot);
+					free_conditions(conroot);
+					free_upcons(uproot);
 					return;
 				}
 				tabletemp = tabletemp->next;
 			}
 			printf("error: The table doesn't exist!\n");
-			freeCons(conroot);
-			freeUpcon(uproot);
+			free_conditions(conroot);
+			free_upcons(uproot);
 			return;
 		}
 		dbtemp = dbtemp->next;
 	}
-	freeCons(conroot);
+	free_conditions(conroot);
 	printf("error: Database %s doesn not exist!\n", database);		
 }
 
 /*丢弃表，即链表的删除节点操作，删除时释放内存*/
-void dropTable(char *tableval){
+void drop_table(char *tableval){
 	struct mydb *dbtemp = NULL;
 	struct table *tabletemp = NULL;
 	struct table *tabletod = NULL;
@@ -827,7 +827,7 @@ void dropTable(char *tableval){
 }
 
 /*丢弃数据库，即链表的删除节点操作，删除时释放内存*/
-void dropDB(char *dbname){
+void drop_database(char *dbname){
 	struct mydb *dbtemp = NULL;
 	struct mydb *dbtod = NULL;
 	struct table *tabletemp = NULL;
